@@ -46,5 +46,33 @@ namespace OOPsReview
 
         // Define auto-implemented properties that does not have backing field
         public DateTime StartDate { get; set; }
+
+        // Define constructors for initializing properties to meaning values
+        public Employment()
+        {
+            //  Set each property to a meaningful value
+            Title = "Unknown";
+            Level = SupervisoryLevel.TeamMember;
+            StartDate = DateTime.Now;
+            Years = 0;
+        }
+
+        public Employment(
+            string title,
+            SupervisoryLevel level,
+            DateTime startdate,
+            double years = 0.0)
+        {
+            // Set each property to corresponding method parameter
+            Title = title;
+            Level = level;
+            StartDate = startdate;
+            Years = years;
+        }
+
+        public override string ToString()
+        {
+            return $"{Title},{Level},{StartDate.ToString("MMM dd yyyy")},{Years}";
+        }
     }
 }
