@@ -1,28 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace OOPsReview
 {
-    // static classes cannot be instantiated
-    //      for example: Utilities util = new Utilities(); // this is not allowed
-    // static class items are referenced using: classname.xxx
-    //      for example: Utilities.IsPositiveOrZero(99)
-    // static class contain only static class-level methods
     public static class Utilities
     {
-        //public static bool IsPositiveOrZero(double value)
-        //{
-        //    return value >= 0;
-        //}
-        public static bool IsPositiveOrZero(double value) => value >= 0.0;
-        public static bool IsPositiveOrZero(int value) => value >= 0;
-        public static bool IsNotPositiveOrZero(double value) => value < 0.0;
+        //static classes are NOT instantiated by the outside user (developer/coder)
+        //static class items are referenced using: classname.xxxxx
+        //methods within this class have the keyword static in their signature
+        //static classes are shared between all outside users at the same time
+        //DO NOT consider saving data within a static class BECAUSE you cannot
+        //      be certain it (data) will be there when you use the class again
+        //consider placing generic re-usable methods within a static class
 
-        public static bool IsBlankString(string value) => string.IsNullOrWhiteSpace(value);
+        public static bool IsPositive(double value)
+        {
+            bool valid = true;
+            if (value < 0.0)
+            {
+                valid = false;
+            }
+            return valid;
 
-        public static bool IsNotBlankString(string value) => string.IsNullOrWhiteSpace(value) == false;
+            //unstructured code
+            //if (value < 0.0)
+            //{
+            //    return false;
+            //}
+            //else
+            //{
+            //    return true;
+            //}
+        }
+
+        public static bool IsPositive(int value) => value >= 0;
+
+        public static bool IsPositive(decimal value) => value >= 0.0m;
     }
 }
