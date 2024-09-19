@@ -20,10 +20,25 @@ namespace OOPsReview
         //  for storing instance data
         //  for internal coding as temporary variables
         //  include constants (all constants names are upper case)
-        private string _Title;
+        private string _Title = string.Empty;
         private SupervisoryLevel _Level;
         private double _Years;
+        private Person _Person;
 
+        public Person Person
+        {
+            get => _Person;
+            set
+            {
+                // If new value is not null
+                if (value != null)
+                {
+                    // Assign new value to backing field
+                    _Person = value;
+                }
+                throw new ArgumentNullException("Person is required.");
+            }
+        }
 
         //properties
         //Title
