@@ -8,33 +8,30 @@ namespace OOPsReview
 {
     public class Person
     {
+        // Define backing fields for properties
         private string _FirstName = string.Empty;
         private string _LastName = string.Empty;
-        private string? _MiddleName;    // nullable field
+     
+        // Define fully implement properties without backing fields
+        public ResidentAddress Address { get; set; }
+        public List<Employment> EmploymentPositions { get; set; } = new List<Employment>();
 
-        public string? MiddleName       // nullable property
+        // Define read-only properties
+        public string FullName => $"{LastName}, {FirstName}";
+
+        public Person() 
         {
-            get { return _MiddleName; }
-            set 
-            { 
-                //if (value == null)
-                //{
-                //    _MiddleName = value;
-                //}
-                //else
-                //{
-                //    _MiddleName = value.Trim();
-                //}
-                 value = _MiddleName?.Trim();
-            }
+            FirstName = "unknown";
+            LastName = "unknown";
         }
 
-        public Person(string firstName, string lastName, string? middleName)
-        {
-            FirstName = firstName;
-            LastName = lastName;    
-            MiddleName = middleName;
-        }
+       
+        //public Person(string firstName, string lastName, string? middleName)
+        //{
+        //    FirstName = firstName;
+        //    LastName = lastName;    
+        
+        //}
 
         public string FirstName
         {
