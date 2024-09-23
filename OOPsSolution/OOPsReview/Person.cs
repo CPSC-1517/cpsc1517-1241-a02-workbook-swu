@@ -25,6 +25,16 @@ namespace OOPsReview
             LastName = "unknown";
         }
 
+        public Person(string firstName, string lastName, ResidentAddress address, List<Employment> employmentpositions)
+        {
+            FirstName = firstName;
+            LastName = lastName;
+            Address = address;
+            if (employmentpositions != null)
+            {
+                EmploymentPositions = employmentpositions;
+            }
+         }
        
         //public Person(string firstName, string lastName, string? middleName)
         //{
