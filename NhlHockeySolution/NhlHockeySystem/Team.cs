@@ -2,20 +2,45 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace NhlHockeySystem
 {
     public class Team
     {
-        public List<Player> Rosters { get; set; } = new List<Player>();
+        private string _Name;
 
-        public Team()
+        public string Name
         {
-            //Player conner = new Player("Connor McDavid", 97, Position.C);
-            //Rosters.Add(conner);
-            //Goalie skinner = new Goalie("Stuart Skinner", 0, Position.G);
-            //Rosters.Add(skinner);
+            get { return _Name; }
+            set
+            {
+                // Name is required and must be in the format word_word
+                // such "Edmonton Oilers" or "Toronto Maple Leafs"
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentNullException("Name cannot be blank.");
+                }
+                Regex pattern = new Regex("^\\w+\\s\\w+$");
+                if (!pattern.IsMatch(value))
+                {
+                    throw new FormatException("Name must contain at least two words separated by a single space character");
+                }
+                _Name = value.Trim();
+            }
+        }
+        public List<Player> Rosters { get; set; } = new List<Player>();
+        public int PlayerCount => Rosters.Count;
+
+        public Team(string name, List<Player> players)
+        {
+            Name = name;
+            if (players != null)
+            {
+                Rosters = players;
+            }
+            //Rosters.Add(new Player("Calvin Pickard", 30, Position.G));
         }
 
         public void AddPlayer(int jerseyNumber, Player player)
