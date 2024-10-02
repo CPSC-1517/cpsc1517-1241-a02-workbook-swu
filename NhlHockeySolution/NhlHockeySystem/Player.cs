@@ -10,7 +10,7 @@ namespace NhlHockeySystem
     {
         // Define data fields
         private string _Name = string.Empty;
-        private int _JerseyNumer;
+        private int _JerseyNumber;
 
         // Define fully-implemented properties
         public string Name
@@ -26,9 +26,9 @@ namespace NhlHockeySystem
                 _Name = value.Trim();
             }
         }
-        public int JerseyNumer
+        public int JerseyNumber
         {
-            get => _JerseyNumer;
+            get => _JerseyNumber;
             set
             {
                 // JerseyNumber must be between 0 and 98.
@@ -36,7 +36,7 @@ namespace NhlHockeySystem
                 {
                     throw new ArgumentException("Jersey Number must be between 0 and 98.");
                 }
-                _JerseyNumer = value;
+                _JerseyNumber = value;
             }
         }
 
@@ -49,10 +49,10 @@ namespace NhlHockeySystem
         public int Points => Goals + Assists;
 
         // Define methods (including constructors)
-        public Player(string name, int jerseyNumer, Position position)
+        public Player(string name, int jerseyNumber, Position position)
         {
             Name = name;
-            JerseyNumer = jerseyNumer;
+            JerseyNumber = jerseyNumber;
             Position = position;
         }
         public void AddGoal()
@@ -65,7 +65,7 @@ namespace NhlHockeySystem
         {
             // Return a list of values as required by the greedy constructor 
             // where each value is separated by a comma
-            return $"{Name},{JerseyNumer},{Position}";
+            return $"{Name},{JerseyNumber},{Position}";
         }
 
         /// <summary>

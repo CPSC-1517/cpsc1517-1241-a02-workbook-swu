@@ -31,7 +31,7 @@ namespace NhlHockeySystem
             //    }
             //}
             bool jerseyNumberExists = Rosters.Any(currentPlayer =>
-                                          currentPlayer.JerseyNumer == jerseyNumber);
+                                          currentPlayer.JerseyNumber == jerseyNumber);
             if (jerseyNumberExists)
             {
                 throw new ArgumentException($"JerseyNumber {jerseyNumber} is already taken.");
