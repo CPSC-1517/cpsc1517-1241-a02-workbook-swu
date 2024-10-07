@@ -1,0 +1,91 @@
+﻿@page "/basicevents"
+<PageTitle>Basic Events</PageTitle>
+
+<!--
+    the next line was introduced in .net 8.0 core
+    this line indicates the interactivity of the rendering mode
+    WE NEED IT TO MAKE THE BUTTONS WOEK ON THE PAGE!!!!!!!!!
+-->
+@rendermode InteractiveServer
+
+<h3>Basic Button Events</h3>
+<h5 style="color:blue;">
+Learning about buttons and events
+</h5>
+
+<blockquote style="background-color:aquamarine">
+    This page will demonstrate the basics of button events.
+    It will use the &lt;input&gt; control to asks for user input.
+    It will use a &lt;button&gt; control to process the input.
+    It will demonstrate basic use of C# code to do the processing.
+</blockquote>
+<br/>
+
+<!-- to enter into C# processing you will use the at symbol-->
+@WelcomeMsg
+<br/>
+
+
+<!--
+    the onclick parameter value is a method name in your C# code
+    when the button is pressed by the user; the action is sent to the sever
+        via SignalR
+    the server starts to process the page;
+    the event is executed after the setup by the server of the page;
+    after the action the page is re-rendered;
+    and return to the browser as an html page
+-->
+<button type="submit" @onclick="Clear">Clear</button>
+<br/><br/>
+<!--
+    user input
+-->
+
+<label>Enter your name:</label>&nbsp;&nbsp;
+<input type="text" @bind="@inputValue" />&nbsp;&nbsp;
+<button type="submit" @onclick="GetInput">Echo</button>
+
+@code {
+         /*
+         * the comment in this block as everything else in this coding block is C#
+         * the directive @code indicagtes the coding block
+    * 
+    */
+
+    /*
+    * Variables declared in the coding block are automatically tied to the
+    *  variable name used in your Html code
+    * data is automatically moved between the control and the variable
+    */
+
+    private string WelcomeMsg;
+    private string inputValue;
+
+    //there are special events already created for the blazor component
+    //one is the ability to execute code as the page is 1st created
+    //the OnInitialized() methhod, is executed when the page is 1st created
+    //it can be used to place special messages on the appearance of a page
+    //      or do initialize variables on your page
+
+    protected override void OnInitialized()
+    {
+        WelcomeMsg = "Let us get started.";
+        base.OnInitialized();
+    }
+
+    //this method is required because a button has it as the call method
+    //  for its onclick
+    private void Clear()
+    {
+        //the ONLY concern of this method is clearing of the local variables
+        WelcomeMsg = "";
+        inputValue = "";
+    }
+
+    private void GetInput()
+    {
+        //the ONLY concern of this method is obtaining and processing the
+        //  value entered into the input control
+        WelcomeMsg = inputValue;
+    }
+}
