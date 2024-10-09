@@ -1,0 +1,31 @@
+﻿@page "/luckynumberpage"
+
+<h3>Random Number Generator</h3>
+
+@feedback
+
+<label>
+    Max number
+    <input type="number" @bind="maxNumber"
+            />
+</label>
+
+<button type="submit" @onclick="OnGenerateNumber">Click Me</button>
+
+@code {
+    // The maximum random number to generate
+    private int maxNumber = 50;
+    // The generated random number between 1 and maxNumber
+    private int randomNumber;
+    // Feedback message for last button action
+    private string? feedback;
+
+    private void OnGenerateNumber()
+    {
+        // Generate a random between 1 and maxNumber
+        randomNumber = Random.Shared.Next(1, maxNumber + 1);
+        // Set feedback with randomNumber
+        feedback = $"Your lucky number is {randomNumber}";
+
+    }
+}
