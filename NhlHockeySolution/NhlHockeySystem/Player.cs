@@ -83,7 +83,7 @@ namespace NhlHockeySystem
             // Verify the number of elements is 3
             if (tokens.Length != 3)
             {
-                throw new ArgumentException($"Line text is not in expected format. Player: {csvLine}");
+                throw new FormatException($"Line text is not in expected format. Player: {csvLine}");
             }
             // return a Player instance using the values from the array
             // Name is located in element index 0

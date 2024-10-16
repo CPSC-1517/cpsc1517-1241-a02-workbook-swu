@@ -1,0 +1,101 @@
+﻿@page "/players/index"
+@inject IWebHostEnvironment WebHostEnvironment
+@using NhlHockeySystem
+
+<h3>Player Listing</h3>
+@if (feedback != null)
+{
+    <div class="alert alert-info">
+        @feedback
+    </div>
+}
+@if (errors.Count > 0)
+{
+    <div class="alert alert-danger">
+        <ul>
+            @foreach(var entry in errors)
+            {
+                <li>@entry.Key : @entry.Value</li>
+            }
+        </ul>
+    </div>
+}
+
+@if (players.Count == 0)
+{
+    <div class="alert alert-info">
+        <p>There are no player data to report.</p>
+    </div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Jersey</th>
+                <th>Position</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var currentPlayer in players)
+            {
+                <tr>
+                    <td>@currentPlayer.Name</td>
+                    <td>@currentPlayer.JerseyNumber</td>
+                    <td>@currentPlayer.Position</td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+}
+
+
+@code {
+    // Create a new list of Player objects
+    private List<Player> players = new();
+    // Declare a nullable string field for feedback messages
+    private string? feedback;
+    // Delcare a Dictionary field for tracking collecton of errors
+    private Dictionary<string,string> errors = new();
+
+    protected override void OnInitialized()
+    {
+        // Get the absolute path our of webapp
+        string contentRootPath = WebHostEnvironment.ContentRootPath;
+        // Get the path of the CSV file to read
+        string csvDataFilePath = $"{contentRootPath}/Data/PlayersGoodData.csv";
+        // Read each line in the CSV file and create a Player instance 
+        // with the associated data and add it to the `players` list.
+        try
+        {
+            // Read all the lines from the CSV file
+            string[] allLines = File.ReadAllLines(csvDataFilePath);
+            // Process each line in allLines
+            int currentLineNo = 1;  // Track the current LineNo
+            foreach(var currentLine in allLines)
+            {
+                try
+                {
+                    // Create a Player instance by parsing the currentLine content
+                    Player currentPlayer = Player.Parse(currentLine);           
+                    // Add the currentPlayer to `players`
+                    players.Add(currentPlayer);
+                }
+                catch(Exception ex)
+                {
+                    errors.Add($"Line {currentLineNo} parsing error", ex.Message);
+                }
+                // Increment Number
+                currentLineNo += 1;
+            }
+            feedback = $"Successfully read {currentLineNo - errors.Count - 1} lines of data.";
+        }
+        catch(Exception ex)
+        {
+            feedback = $"Error reading from ${csvDataFilePath} with exception {ex.Message}";
+        }
+
+    }
+}
