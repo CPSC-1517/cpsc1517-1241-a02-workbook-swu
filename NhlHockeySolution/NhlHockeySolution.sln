@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NhlHockeySystem", "NhlHocke
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NhlHockeySystemTest", "NhlHockeySystemTest\NhlHockeySystemTest.csproj", "{39F83AEA-6F81-4898-96E9-6305828C6385}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NhlHockeyWebApp", "NhlHockeyWebApp\NhlHockeyWebApp.csproj", "{724D39EF-6A07-4FAC-9CAE-E05F8A3042A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NhlHockeyWebApp", "NhlHockeyWebApp\NhlHockeyWebApp.csproj", "{724D39EF-6A07-4FAC-9CAE-E05F8A3042A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

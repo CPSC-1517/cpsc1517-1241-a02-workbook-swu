@@ -1,0 +1,135 @@
+﻿@page "/players/create"
+@using NhlHockeySystem
+@inject NavigationManager NavigationManager
+@inject IWebHostEnvironment WebHostEnvironment
+
+<h3>Player Form</h3>
+
+@if (feedback != null)
+{
+    <div class="alert alert-info">
+        @feedback
+    </div>    
+}
+
+@if (errors.Count > 0)
+{
+    <div class="alert alert-danger">
+        <p>Please fix the following issues:</p>
+        <ul>
+            @foreach (var entry in errors)
+            {
+                <li>@entry.Key : @entry.Value</li>
+            }
+        </ul>
+    </div>
+}
+
+<fieldset>
+
+    <div class="mb-3">
+        <label for="playername" class="form-label">Name</label>
+        <input type="text" 
+            class="form-control" 
+            id="playername" 
+            @bind="playerName"
+            placeholder="enter player name">
+    </div>
+    <div class="mb-3">
+        <label for="playernumber" class="form-label">Jersey Number</label>
+        <input type="number"
+               class="form-control"
+               id="playernumber"
+               @bind="playerNumber"
+               min="0"
+               max="98"
+        >
+    </div>
+    <select id="playerPosition"
+        @bind="playerPosition"
+        class="form-select" aria-label="Player Position">
+        <option selected >Select Player Position</option>
+        @foreach(var currentPosition in Enum.GetValues<Position>())
+        {
+            <option>@currentPosition</option>
+        }
+    </select>
+</fieldset>
+
+<button type="button" @onclick="OnAddPlayer" class="btn btn-primary">Add Player</button>
+&nbsp;
+&nbsp;
+<button type="button" @onclick="OnClearForm" class="btn btn-secondary">Clear Form</button>
+&nbsp;
+&nbsp;
+<button type="button" @onclick="OnViewPlayers" class="btn btn-success">View Players</button>
+
+@code {
+    // Define fields for form field data binding
+    private string playerName = string.Empty;
+    private int playerNumber;
+    private Position playerPosition;
+
+    // Define a nullable string for feedback message
+    private string? feedback;
+
+    // Define a Dictionary for storing collection of validation error messages
+    private Dictionary<string, string> errors = new();
+
+    private void OnAddPlayer()
+    {
+        // Clear any previous feedback or errors
+        feedback = null;
+        errors.Clear();
+        // Validate playerName is not blank
+        if (string.IsNullOrWhiteSpace(playerName))
+        {
+            errors.Add("playerName", "Player Name is required.");
+        }
+        if (playerNumber < 0 || playerNumber > 98)
+        {
+            errors.Add("playerNumber", "Player Number must between 0 and 98.");
+        }
+        // Add the new player data to csv file if there are no validation errors
+        if (errors.Count == 0)
+        {
+            //feedback = "You clicked on Add Player";
+            //feedback = $"Name: {playerName}, Number: {playerNumber}, Position: {playerPosition}";
+            // Create a new Player instance using the fields for playerName, playerNumber, playerPosition
+            // Add the end of the CSV file PlayersGoodData.csv a new line containing
+            // playerName, playerNumber, playerPosition.
+            // Get the absolute path our of webapp
+            string contentRootPath = WebHostEnvironment.ContentRootPath;
+            // Get the path of the CSV file to read
+            string csvDataFilePath = $"{contentRootPath}/Data/PlayersGoodData.csv";
+            try
+            {
+                // Create a new Player instance
+                Player currentPlayer = new Player(playerName, playerNumber, playerPosition);
+                string csvLine = $"{currentPlayer.ToString()}\n";
+                File.AppendAllText(csvDataFilePath, csvLine);
+                feedback = "Successfully added player data";
+            }
+            catch (Exception ex)
+            {
+                feedback = $"Add player not successful with exception {ex.Message}";
+            }
+        }
+
+
+    }
+
+    private void OnClearForm()
+    {
+        feedback = null;
+        errors.Clear();
+        playerName = string.Empty;
+        
+    }
+
+    private void OnViewPlayers()
+    {
+        // feedback = "You clicked on View Players";
+        NavigationManager.NavigateTo("/players/index");
+    }
+}
