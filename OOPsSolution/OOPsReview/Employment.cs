@@ -8,158 +8,168 @@ namespace OOPsReview
 {
     public class Employment
     {
-        //a class is a programmer defined data-type
-
-        //data member
-        //standards:
-        //  will be private
-        //  names will begin with an underscore (_)
-        //  Pascal-case
-        //required: optional
-        //when used: 
-        //  for storing instance data
-        //  for internal coding as temporary variables
-        //  include constants (all constants names are upper case)
-        private string _Title = string.Empty;
-        private SupervisoryLevel _Level;
+        //data members (fields, variables)
+        //typically data members are private and hold data for use
+        //  within your class
+        //usually associated with a property
+        //a data member does not have an built-in validation
+        private string _Title;
         private double _Years;
-        private Person _Person;
-
-        public Person Person
-        {
-            get => _Person;
-            set
-            {
-                // If new value is not null
-                if (value != null)
-                {
-                    // Assign new value to backing field
-                    _Person = value;
-                }
-                throw new ArgumentNullException("Person is required.");
-            }
-        }
+        private SupervisoryLevel _Level;
 
         //properties
-        //Title
-        //since there is validation, the property will be fully-implemented
-        //since fully-implemented, one requires a data member
+        //are associated with a single piece of data.
+        //Properties can be implemented by:
+        //  a) fully implemented property
+        //  c) auto implmented property
+
+        //A property does not need to store data
+        //  this type of property is referred to as a read-only
+        //  this property typically uses existing data values
+        //      within the instance to return a computed value
+
+        //fully implemented properties usually has additional logic
+        //  to execute for control over the data: such as validation
+        //fully implemented properties will have a declared data
+        //  member to store the data into
+
+        //auto implemented properties do not have additional logic
+        //Auto implemented properties do not have a declared
+        //  data member instead the o/s will create on the property's
+        //  behave a storage that is accessable ONLY by the property
+
+        ///<summary>
+        ///Property: Title
+        ///validation: there must be a character in the string
+        ///a property will always have a getter (accessor)
+        ///a property may or maynot have a setter (mutator)
+        /// no mutator the property is consider "read-only" and is
+        ///         usually returning a compound field
+        /// has a mutator, the property will a some point save the data
+        ///     to storage
+        /// the mutator may be public (default) or private
+        ///     public: accessable by outside users of the class
+        ///     private: accessable ONLY within the class, usually
+        ///                 via the constructor or a method
+        /// !!!!! a property DOES NOT have ANY declared incoming parameters !!!!!!
+        /// </summary>
+
         public string Title
         {
-            //referred to as the accessor
-            //get is a required item in a property
+            //accessor (getter)
+            //returns the string associated with this property
             get { return _Title; }
 
-            //referred to as the mutator
-            //incoming data is accessed using the keyword value
-            //the set is an optional item in a property
-            //open to the public by default
-            //can be restricted to use ONLY with the constuctor/method
-            //  by setting the access to the set to: private
-            //IF the set is private the only way to access a value
-            //  to the property is via: a constructor OR a behaviour(method)
-
+            //mutator (setter)
+            //it is within the set that the validation of the data
+            //  is done to determine if the data is acceptable
+            //if all processing of the string is done via the property
+            //  it will ensure that good data is within the associated string
             set
             {
                 if (string.IsNullOrWhiteSpace(value))
-                {
-                    //absolutely NO console commands
-                    throw new ArgumentNullException("Title is required");
-                }
-                //else
-                //{
-                _Title = value;
-                //}
+                    throw new ArgumentNullException("Title", "Title is a required field");
+
+                //it is a very good practice to remove leading and trailing spaces on strings
+                //  so that only the required and important characters are stored.
+                //to do this santization use .Trim()
+                _Title = value.Trim();
+
 
             }
         }
 
-        //enum SupervisoryLevel will have additional logic to test if the value
-        //      supplied to the field is actually defined in the enum
-        //therefore this property will be fully-implemented
-        //the private set will NOT allow a piece of code outside of this class
-        //  to change the value of the property
-        //this will force any code using this class to set the Level either by
-        //  the a constructor OR a behaviour (method)
-        //it basically makes the Level a read only field when accessed directly
-        public SupervisoryLevel Level
-        {
-            get { return _Level; }
-            private set
-            {
-                if (!Enum.IsDefined(typeof(SupervisoryLevel), value))
-                {
-                    throw new ArgumentException($"Supervisory level is invalid: {value}");
-                }
-                _Level = value;
-            }
-        }
-        //Years will need to be a positive zero or greater value
-        //double
-        //therefore this property needs to be fully-implemented IF
-        //  the validation is within the property
-        //NOTE: validations CAN be code elsewhere within your class
-        //      if so, you need to restrict the set access to the
-        //      property so that any data will be forced through the
-        //      validation logic located elsewhere
+        ///<summary>
+        ///Property: Years
+        ///validation: the value must be 0 to greater
+        ///</summary>
         public double Years
         {
-            get { return _Years; }
-            //set 
-            //{
-
-            //    if (value < 0)
-            //    {
-            //        throw new ArgumentOutOfRangeException($"Year value {value} is invalid. Must be 0 or greater.");
-            //    }
-            //    _Years = value;
-            //}
-            private set
+            get
             {
-                //if the set was private validation could be elsewhere
-
+                return _Years;
+            }
+            set
+            {
+                //if (value < 0)
+                if (!Utilities.IsZeroOrPositive(value))
+                    throw new ArgumentOutOfRangeException("Years", value,
+                            "Years must be 0 to greater (ie 3.75)");
                 _Years = value;
             }
         }
-        //this property is an example of an auto-implemented property
-        //there is no validation in the property
-        //therefore no private data member is required
-        //the system will generate an internal storage area for the data
-        //      and handle the setting and retreiving from that storage area
 
-        public DateTime StartDate { get; set; }
+        ///<summary>
+        ///Property: StarDdate
+        ///validation: none
+        ///access: private
+        ///</summary>
+        //since the access to this property for the mutator is private ANY validation
+        //  for this data will need to be done elsewhere
+        //possible locations for the validation could be in
+        //  a) a constructor
+        //  b) any method that will alter the data
+        //a private mutator will NOT allow alteration of the data via a property for the
+        //  outside user, however, methods within the class will still be able to
+        //  use the property
+
+        //this property can be coded as an auto-implemented property
+        public DateTime StartDate { get; private set; }
+
+        ///<summary>
+        ///Property: Level
+        ///validation: none
+        ///note: this is an enum using SupervisoryLevel
+        ///</summary>
+
+        //can an auto-implemented be coded as a fully implemented
+        public SupervisoryLevel Level
+        {
+            get { return _Level; }
+            //set { _Level = value; } //default public access
+            private set
+            {
+                //once this validation is added to this psuedo "auto-implement" property 
+                //  it would need to be considered a fully-implemented property
+                if (!Enum.IsDefined(typeof(SupervisoryLevel), value))
+                    throw new ArgumentException($"Invalid supervisory level value of {value} ", "Level");
+                _Level = value;
+            }
+        }
 
         //constructors
+
         //your class does not technically need a constructor
         //if you code a constructor for your class you are responsible for coding ALL constructors
         //if you do not code a constructor then the system will assign the software datatype defaults
-        //  to your variables (data members)
+        //  to your variables (data members/auto-implemented properties)
 
         //syntax: accesslevel constructorname([list of parameters]) { .... }
         //NOTE: NO return datatype
         //      the constructorname MUST be the class name
 
         //Default
-        //simulates the "sysem defaults"
+        //simulates the "system defaults"
         public Employment()
         {
             //if there is no code within this constructor, the actions for setting
             //  your internal fields will be using the system defaults for the datatype
 
             //optionally
-            // you could assign values to your intal fields within this constructor typically
+            // you could assign values to your intial fields within this constructor typically
             // using literal values
             //Why?
             // your internal fields may have validation attached to the data for the field
             // this validation is usually within the property
             // you would wish to have valid data values for your internal fields
+
             Title = "unknown";
             Level = SupervisoryLevel.TeamMember;
             StartDate = DateTime.Today;
 
-            //Years?
-            //the defualt is fine (0)
-            //however if you wish you could actually assign the value 0
+            //Years ?
+            //the default is fine (0.0)
+            //however, if you wish you could actually assign the value 0 yourself
             Years = 0.0;
         }
 
@@ -169,13 +179,13 @@ namespace OOPsReview
         //the list of parameters may or maynot contain default parameter values
         //if you have assigned default parameter values then those parameters MUST be at the end of
         //  the parameter list
+
         public Employment(string title, SupervisoryLevel level,
                             DateTime startdate, double years = 0.0)
         {
-            //here, year is a parameter with a defualt value
             Title = title;
             Level = level;
-            //Years = years; incorrect due to unit testing
+            Years = years;
 
             //one could add valiation, especially if the property has a private set  OR the property
             //  is an auto-implemented property that has restrictions
@@ -193,104 +203,82 @@ namespace OOPsReview
 
             if (startdate >= DateTime.Today.AddDays(1))
             {
-                throw new ArgumentException($"The start date {startdate} is in the future.");
+                throw new ArgumentException($"The start date {startdate} is in the future.", "Startdate");
             }
             StartDate = startdate;
 
-            //Wait to add this until doing unit tests demonstration
-            //this will demonstrate a missed requirement caught by a unit test
-            //add the generation of the years when the default values exists
-            //this was discovered by the failure of the unit test for the constructor
-            // if (years < 0)
-            if (!Utilities.IsPositive(years))
+            //the unit test discovered that the years is not being correctly calculate
+            //  if the default value for the parameter is used
+            //the constructor should calculate the years from the supplied startdate
+            //  to the current date
+            if (years > 0.0)
             {
-                throw new ArgumentOutOfRangeException($"Year value of {years} is invalid. Cannot be negative");
+                Years = years;
             }
             else
             {
-                if (years == 0)
-                {
-                    TimeSpan days = DateTime.Today - startdate;
-                    Years = Math.Round((days.Days / 365.2), 1);
-                }
-                else
-                {
-                    Years = years;
-                }
+                TimeSpan span = DateTime.Today - StartDate;
+                Years = Math.Round((span.Days / 365.2), 1);
             }
+
         }
 
-
-
-        //methods
+        //methods (aka behaviours)
 
         //syntax: access returndatatype methodname ([list of parameters]) { ..... }
 
         //REMEMBER: YOU HAVE ACCESS TO ALL VALUES WITHIN THE INSTANCE SO YOU DO NOT
         //          HAVE TO PASS IN VALUES THAT ARE ALREADY CONTAINED IN THE INSTANCE.
 
-        public void SetEmploymentResponsibilityLevel(SupervisoryLevel level)
-        {
-            //the property has a private set
-            //the property has validation, therefore, if I assign the parameter via the property
-            //  the validation in the property will check the value
-            Level = level;
-        }
-
-        //override the default class method called ToString()
         public override string ToString()
         {
             //this string is known as a "comma separate value" string (csv)
+            //concern: when the date is used, it could have a , within the data value
+            //solution: IF this is a possibillity that a value that is used in createing the string pattern
+            //              could make the pattern invalid, you should explicitly handle how the value should be
+            //              displayed in the string
             return $"{Title},{Level},{StartDate.ToString("MMM dd yyyy")},{Years}";
         }
 
-        //even though you could possible change a property directly
-        //there is nothing to say, can I also do it in a method?
+        //if SypervisoryLevel setter is private this means altering the Level must be done in constructor
+        //(which executes ONLY ONCE during creation) or via a method
+        public void SetEmploymentResponsibilityLevel(SupervisoryLevel level)
+        {
+            Level = level;
+        }
+
+        //StartDate is private set
+        //Note: when you have a private set, you MAY NEED to duplicate validation in several places
+        //(constructor AND this method)
         public void CorrectStartDate(DateTime startdate)
         {
-            //if the property does NOT have validation in it AND you need to apply validation
-            //  then you would have to include the validation within this method.
             if (startdate >= DateTime.Today.AddDays(1))
             {
-                throw new ArgumentException($"The start date {startdate} is in the future.");
+                throw new ArgumentException($"The start date {startdate} is in the future.", "Startdate");
             }
             StartDate = startdate;
 
-            //add the generation of the years when the date is updated
-            //this assumes that this is the most current employment
-
+            //concern
+            //if the startdate has been altered from the creation of the
+            //  instance WHERE the years has been set, then should the 
+            //  years be recalculated?
             TimeSpan days = DateTime.Today - startdate;
             Years = Math.Round((days.Days / 365.2), 1);
-
         }
-
-        //this is a discussion method and NOT part of the Employment class
-        //topic: Does one have to pass in data to a method if the data is part of the instance
-        //       The answer is NO.
-        //Logic: the instance needs to exist to call the method
-        //       the data needs to exist to create the instance
-        //       therefore the data is already in the instance
-        //       thus the data does NOT need to be passed into the method, simply accessed
-        //          from within the instance.
-        //public double TerminationPay(double salary)
-        //{
-
-        //    double pay = 0.0;
-        //    double weeks = 0.0;
-        //    weeks = Years * 52; //using the value already in the instance
-        //    pay = weeks > 260 ? salary : weeks / 260 * salary;
-
-        //    //rewrite of statement as if statement
-        //    //if (weeks > 260)
-        //    //{
-        //    //    pay = salary;
-        //    //}
-        //    //else
-        //    //{
-        //    //    pay =  weeks / 260 * salary;
-
-        //    //}
-        //    return pay;
-        //}
+        //create a method that would accept a string and convert the data within the string
+        //  into an instance of Employment. Return the instance.
+        //this would be the parsing of the string
+        public static Employment Parse(string item)
+        {
+            string[] dataValues = item.Split(',');
+            if (dataValues.Length != 4)
+            {
+                throw new FormatException($"Invalid record format: {item}");
+            }
+            return new Employment(dataValues[0],
+                                  (SupervisoryLevel)Enum.Parse(typeof(SupervisoryLevel), dataValues[1]),
+                                  DateTime.Parse(dataValues[2]),
+                                  double.Parse(dataValues[3]));
+        }
     }
 }
