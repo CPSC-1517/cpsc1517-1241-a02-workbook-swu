@@ -66,6 +66,9 @@ else
         string contentRootPath = WebHostEnvironment.ContentRootPath;
         // Get the path of the CSV file to read
         string csvDataFilePath = $"{contentRootPath}/Data/PlayersGoodData.csv";
+        // string csvDataFilePath = $"{contentRootPath}/Data/PlayersBadData.csv";
+        // string csvDataFilePath = $"{contentRootPath}/Data/PlayersEmptyData.csv";
+
         // Read each line in the CSV file and create a Player instance 
         // with the associated data and add it to the `players` list.
         try
