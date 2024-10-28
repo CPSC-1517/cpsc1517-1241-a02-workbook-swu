@@ -7,7 +7,7 @@ using WestWindSystem.Entities;
 
 namespace WestWindSystem.DAL;
 
-public partial class WestWindContext : DbContext
+internal partial class WestWindContext : DbContext
 {
     public WestWindContext(DbContextOptions<WestWindContext> options)
         : base(options)
@@ -52,7 +52,7 @@ public partial class WestWindContext : DbContext
 
         modelBuilder.Entity<BuildVersion>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__BuildVer__3214EC07FA0C63E7");
+            entity.HasKey(e => e.Id).HasName("PK__BuildVer__3214EC07BF6E2465");
 
             entity.Property(e => e.ReleaseDate).HasDefaultValueSql("(getdate())");
         });
@@ -97,7 +97,7 @@ public partial class WestWindContext : DbContext
 
         modelBuilder.Entity<ManifestItem>(entity =>
         {
-            entity.HasKey(e => e.ManifestItemID).HasName("PK__Manifest__9000192CB79D428C");
+            entity.HasKey(e => e.ManifestItemID).HasName("PK__Manifest__9000192C1F6DF27D");
 
             entity.HasOne(d => d.Product).WithMany(p => p.ManifestItems)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -179,7 +179,7 @@ public partial class WestWindContext : DbContext
 
         modelBuilder.Entity<Shipment>(entity =>
         {
-            entity.HasKey(e => e.ShipmentID).HasName("PK__Shipment__5CAD378DF854ECC9");
+            entity.HasKey(e => e.ShipmentID).HasName("PK__Shipment__5CAD378DF013DF2B");
 
             entity.HasOne(d => d.Order).WithMany(p => p.Shipments)
                 .OnDelete(DeleteBehavior.ClientSetNull)

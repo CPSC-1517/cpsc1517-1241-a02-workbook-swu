@@ -1,0 +1,50 @@
+﻿@page "/categories"
+@using WestWindSystem.Entities
+@using WestWindSystem.BLL
+
+
+<h3>Categories</h3>
+@if (_categoryList != null && _categoryList.Count > 0)
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var currentCategory in _categoryList)
+            {
+                <tr>
+                    <td>@currentCategory.CategoryID</td>
+                    <td>@currentCategory.CategoryName</td>
+                    <td>@currentCategory.Description</td>
+
+                    @if(currentCategory.Picture != null)
+                    {
+                        <td>
+<img src="data:@currentCategory.PictureMimeType;base64,@Convert.ToBase64String(currentCategory.Picture)" 
+alt="Category Picture"/>
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Inject]
+    private CategoryService CategoryService { get; set; }
+
+    private List<Category> _categoryList;
+
+    protected override void OnInitialized()
+    {
+        _categoryList = CategoryService.Category_GetList();
+
+    }
+
+}
