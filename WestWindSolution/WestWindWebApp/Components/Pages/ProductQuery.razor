@@ -1,0 +1,113 @@
+﻿@page "/products/query"
+@using WestWindSystem.BLL;
+@using WestWindSystem.Entities;
+
+<PageTitle>Product Query</PageTitle>
+
+<h3>Product Query</h3>
+
+@if(string.IsNullOrWhiteSpace(feedback) != true)
+{
+    <div class="alert alert-info">
+        @feedback
+    </div>
+}
+
+<fieldset>
+    <div class="row">
+        <div class="col">
+            <select id="categories" @bind="selectedCategoryId" class="form-select-lg" 
+                aria-label="Select a category">
+                <option value="0">select a category</option>
+                @foreach(var currentCategory in categoryList)
+                {
+                    <option value="@currentCategory.CategoryID">@currentCategory.CategoryName</option>
+                }
+            </select>
+            &nbsp;
+            <button type="submit" class="btn btn-success" @onclick="OnFetchProducts">Fetch Products</button>
+            &nbsp;
+            <button type="submit" class="btn btn-secondary" @onclick="OnClear">Clear</button>
+        </div>
+    </div>
+</fieldset>
+
+@if(productsQueryResultList.Count > 0)
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ProductID</th>
+                <th>Product Name</th>
+                <th>Unit Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var currentProduct in productsQueryResultList)
+            {
+                <tr>
+                    <td>@currentProduct.ProductID</td>
+                    <td>@currentProduct.ProductName</td>
+                    <td>@currentProduct.UnitPrice.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    [Inject] private CategoryService _categoryService { get; set; }
+    private List<Category> categoryList = new();
+    private int selectedCategoryId;
+
+    [Inject] private ProductService _productService { get; set; }
+    private List<Product> productsQueryResultList = new();
+
+    private string? feedback;
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            categoryList = _categoryService.Category_GetList();
+        }
+        catch(Exception e)
+        {
+            feedback = $"Error fetch categories with exception {e.Message}";
+        }
+
+
+        base.OnInitialized();
+    }
+
+    protected void OnFetchProducts()
+    {
+        //feedback = null; // remove previous feedback message
+        if (selectedCategoryId == 0)
+        {
+            feedback = "You must select an existing category";
+            productsQueryResultList.Clear();
+        }
+        else
+        {
+            try
+            {
+                productsQueryResultList = _productService.Products_GetByCategory(selectedCategoryId);
+                feedback = $"Query returned {productsQueryResultList.Count} results.";
+            }
+            catch (Exception e)
+            {
+                feedback = $"Error fetching categories with exception {e.Message}";
+            }
+        }
+        
+    }
+
+    protected void OnClear()
+    {
+        feedback = null;
+        selectedCategoryId = 0;
+        productsQueryResultList.Clear();
+    }
+}

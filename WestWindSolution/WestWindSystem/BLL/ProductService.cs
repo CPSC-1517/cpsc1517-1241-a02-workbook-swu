@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WestWindSystem.DAL;
+using WestWindSystem.Entities;
 
 namespace WestWindSystem.BLL
 {
@@ -14,6 +15,15 @@ namespace WestWindSystem.BLL
         internal ProductService(WestWindContext registeredContext)
         {
             _context = registeredContext;
+        }
+
+        public List<Product> Products_GetByCategory(int categoryID)
+        {
+            var query = _context
+                .Products
+                .Where(x => x.CategoryID == categoryID)
+                .OrderBy(x => x.ProductName);
+            return query.ToList();
         }
     }
 }
