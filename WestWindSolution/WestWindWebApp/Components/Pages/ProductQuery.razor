@@ -13,6 +13,19 @@
     </div>
 }
 
+@if(errorMessages.Count > 0)
+{
+    <div class="alert alert-danger">
+        <p>Please fix the following issues:</p>
+        <ul>
+            @foreach(var currentError in errorMessages)
+            {
+                <li>@currentError</li>
+            }
+        </ul>
+    </div>
+}
+
 <fieldset>
     <div class="row">
         <div class="col">
@@ -65,6 +78,7 @@
     private List<Product> productsQueryResultList = new();
 
     private string? feedback;
+    private List<string> errorMessages = new();
 
     protected override void OnInitialized()
     {
@@ -74,7 +88,7 @@
         }
         catch(Exception e)
         {
-            feedback = $"Error fetch categories with exception {e.Message}";
+            errorMessages.Add($"Error fetch categories with exception {GetInnerException(e).Message}");
         }
 
 
@@ -83,10 +97,12 @@
 
     protected void OnFetchProducts()
     {
-        //feedback = null; // remove previous feedback message
+        feedback = null; // remove previous feedback message
+        errorMessages.Clear();
+
         if (selectedCategoryId == 0)
         {
-            feedback = "You must select an existing category";
+            errorMessages.Add("You must select an existing category");
             productsQueryResultList.Clear();
         }
         else
@@ -98,16 +114,28 @@
             }
             catch (Exception e)
             {
-                feedback = $"Error fetching categories with exception {e.Message}";
+                errorMessages.Add($"Error fetching categories with exception {GetInnerException(e).Message}");
             }
         }
-        
+
     }
 
     protected void OnClear()
     {
         feedback = null;
+        errorMessages.Clear();
         selectedCategoryId = 0;
         productsQueryResultList.Clear();
+    }
+
+    private Exception GetInnerException(Exception ex)
+    {
+        // Drill down into the Exception until there are no
+        // more at this point you have the first error.
+        while (ex.InnerException != null)
+        {
+            ex = ex.InnerException;
+        }
+        return ex;
     }
 }
