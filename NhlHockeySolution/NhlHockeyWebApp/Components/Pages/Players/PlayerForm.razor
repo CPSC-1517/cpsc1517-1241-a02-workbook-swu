@@ -1,5 +1,5 @@
 ﻿@page "/players/create"
-@using NhlHockeySystem
+@* @using NhlHockeySystem *@
 @inject NavigationManager NavigationManager
 @inject IWebHostEnvironment WebHostEnvironment
 
@@ -48,10 +48,10 @@
     <select id="playerPosition"
         @bind="playerPosition"
         class="form-select" aria-label="Player Position">
-        <option selected >Select Player Position</option>
+        <option selected=@(playerPosition == null)>---select player position---</option>
         @foreach(var currentPosition in Enum.GetValues<Position>())
         {
-            <option>@currentPosition</option>
+            <option selected=@(currentPosition == playerPosition) >@currentPosition</option>
         }
     </select>
 </fieldset>
@@ -68,13 +68,21 @@
     // Define fields for form field data binding
     private string playerName = string.Empty;
     private int playerNumber;
-    private Position playerPosition;
+    private Position? playerPosition;
 
     // Define a nullable string for feedback message
     private string? feedback;
 
     // Define a Dictionary for storing collection of validation error messages
     private Dictionary<string, string> errors = new();
+
+    protected override void OnInitialized()
+    {
+        // playerPosition = Position.D;
+
+
+        base.OnInitialized();
+    }
 
     private void OnAddPlayer()
     {
@@ -105,7 +113,7 @@
             try
             {
                 // Create a new Player instance
-                Player currentPlayer = new Player(playerName, playerNumber, playerPosition);
+                Player currentPlayer = new Player(playerName, playerNumber, playerPosition ?? Position.D);
                 string csvLine = $"{currentPlayer.ToString()}\n";
                 File.AppendAllText(csvDataFilePath, csvLine);
                 feedback = "Successfully added player data";
@@ -124,7 +132,10 @@
         feedback = null;
         errors.Clear();
         playerName = string.Empty;
-        
+        playerNumber = 0;
+        // playerPosition = Position.C;
+        playerPosition = null;
+
     }
 
     private void OnViewPlayers()
