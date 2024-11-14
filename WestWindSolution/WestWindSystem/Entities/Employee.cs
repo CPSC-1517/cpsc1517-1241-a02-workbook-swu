@@ -12,6 +12,9 @@ namespace WestWindSystem.Entities;
 [Index("AddressID", Name = "UX_Employees_AddressID", IsUnique = true)]
 public partial class Employee
 {
+    [NotMapped]
+    public string FullName => $"{FirstName} {LastName}";
+
     [Key]
     public int EmployeeID { get; set; }
 

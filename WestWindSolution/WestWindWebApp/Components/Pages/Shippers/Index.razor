@@ -1,0 +1,28 @@
+﻿@page "/shippers/index"
+
+<h3>Shipper Listing</h3>
+
+@if (shippers.Count > 0) {
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Company Name</th>
+                <th>Phone</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var currentShipper in shippers)
+            {
+                <tr>
+                    <td>@currentShipper.ShipperID</td>
+                    <td>@currentShipper.CompanyName</td>
+                    <td>@currentShipper.Phone</td>
+                    <td><a href="/shippers/crud/@currentShipper.ShipperID">edit</a></td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+}

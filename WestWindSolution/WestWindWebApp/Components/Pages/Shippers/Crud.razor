@@ -1,0 +1,11 @@
+﻿@page "/shippers/crud/{ShipperID:int?}"
+@using WestWindSystem.BLL
+@using WestWindSystem.Entities
+
+<h3>Shipper CRUD</h3>
+
+@code {
+
+    [Parameter]
+    public int? ShipperID { get; set; }
+}
