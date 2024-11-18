@@ -2,6 +2,8 @@
 @using WestWindSystem.BLL
 @using WestWindSystem.Entities
 @inject ShipperService CurrentShipperService
+@inject IJSRuntime JsRuntime
+@inject NavigationManager CurrentNavigationManger
 
 @if (feedback != null) 
 {
@@ -32,7 +34,13 @@
             @bind-Value="CurrentShipper.Phone" />
         </div>
         <div class="row mb-2">
-            <button class="btn btn-primary" type="submit">Add</button>
+            <button class="btn btn-primary" type="submit">
+                @(ShipperID.HasValue ? "Update" : "Add") 
+            </button>
+            @if (ShipperID.HasValue)
+            {
+                <button class="btn btn-danger" @onclick="DeleteShipper">Delete</button>
+            }
         </div>
     </fieldset>
 
@@ -48,20 +56,57 @@
 
     protected override void OnInitialized()
     {
-        CurrentShipper = new();
+        if (ShipperID.HasValue)  // Edit Shipper
+        {
+            // Fetch Shipper with matching ShipperID from system
+            CurrentShipper = CurrentShipperService.GetShipper(ShipperID.Value);
+        }
+        else // Create new Shipper
+        { 
+            CurrentShipper = new();
+        }
+
     }
 
     private void SaveShipper() {
         // feedback = "TODO: Save Shipper";
         try
         {
-            ShipperID = CurrentShipperService.AddShipper(CurrentShipper);
-            feedback = $"Shipper created with an ID of {ShipperID}";
-            //CurrentShipper = new();
+            if (ShipperID.HasValue) // Update Shipper
+            {
+                CurrentShipperService.UpdateShipper(CurrentShipper);
+                feedback = $"Shipper information have beend updated.";
+            }
+            else // Add Shipper
+            {
+                ShipperID = CurrentShipperService.AddShipper(CurrentShipper);
+                feedback = $"Shipper created with an ID of {ShipperID}";
+            }
         }
         catch(Exception ex) 
         {
             feedback = $"Error saving shipper information: {ex.Message}";
+        }
+    }
+
+    public async Task DeleteShipper()
+    {
+        // Display a Javascript confirmation dialog
+        bool confirmed = await JsRuntime.InvokeAsync<bool>(
+            "confirm", $"Are you sure you want to delete {CurrentShipper.CompanyName}?");
+        if (confirmed)
+        {
+            try
+            {
+                CurrentShipperService.DeleteShipper(CurrentShipper.ShipperID);
+                //feedback = $"The shipper has been removed from the system.";
+                // Navigate to Shipper listing page
+                CurrentNavigationManger.NavigateTo("/shippers/index");
+            }
+            catch(Exception ex)
+            {
+                feedback = $"Error deleting shipper: {ex.Message}";
+            }
         }
     }
 }

@@ -9,6 +9,9 @@ namespace WestWindWebApp.Components.Pages.Shippers
         [Inject]
         private ShipperService CurrentShipperService { get; set; }
 
+        //[Inject]
+        //private NavigationManager CurrentNavigationManager { get; set; }
+
         private List<Shipper> shippers = [];
         private string feedback;
 
