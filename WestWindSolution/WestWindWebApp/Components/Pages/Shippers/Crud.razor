@@ -1,11 +1,67 @@
 ﻿@page "/shippers/crud/{ShipperID:int?}"
 @using WestWindSystem.BLL
 @using WestWindSystem.Entities
+@inject ShipperService CurrentShipperService
+
+@if (feedback != null) 
+{
+    <div class="alert alert-info">
+        @feedback
+    </div>
+}
 
 <h3>Shipper CRUD</h3>
+<EditForm Model="CurrentShipper" OnValidSubmit="SaveShipper">
+    @* Client-Side Validation *@
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <fieldset>
+        <div class="row mb-2">
+            <label class="col-2" for="shipperID">ShipperID:</label>
+            <InputNumber disabled @bind-Value="CurrentShipper.ShipperID" />
+        </div>
+        <div class="row mb-2">
+            <label class="col-2" for="companyName">Company Name:</label>
+            <InputText class="form-control col-6" 
+            @bind-Value="CurrentShipper.CompanyName"/>
+        </div>
+        <div class="row mb-2">
+            <label class="col-2" for="phone">Phone:</label>
+            <InputText class="form-control col-6"
+            @bind-Value="CurrentShipper.Phone" />
+        </div>
+        <div class="row mb-2">
+            <button class="btn btn-primary" type="submit">Add</button>
+        </div>
+    </fieldset>
+
+</EditForm>
 
 @code {
 
     [Parameter]
     public int? ShipperID { get; set; }
+
+    private Shipper? CurrentShipper { get; set; }
+    private string? feedback;
+
+    protected override void OnInitialized()
+    {
+        CurrentShipper = new();
+    }
+
+    private void SaveShipper() {
+        // feedback = "TODO: Save Shipper";
+        try
+        {
+            ShipperID = CurrentShipperService.AddShipper(CurrentShipper);
+            feedback = $"Shipper created with an ID of {ShipperID}";
+            //CurrentShipper = new();
+        }
+        catch(Exception ex) 
+        {
+            feedback = $"Error saving shipper information: {ex.Message}";
+        }
+    }
 }
