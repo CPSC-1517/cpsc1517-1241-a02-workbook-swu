@@ -13,11 +13,12 @@ public partial class Shipper
     [Key]
     public int ShipperID { get; set; }
 
-    [Required]
+    [Required]//[Required(ErrorMessage = "Company Name value is required.")]
     [StringLength(40)]
     public string CompanyName { get; set; }
 
     [Required]
+    [Phone(ErrorMessage = "A valid phone number is required")]
     [StringLength(24)]
     public string Phone { get; set; }
 

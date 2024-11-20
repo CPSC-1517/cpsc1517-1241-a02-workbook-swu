@@ -13,7 +13,7 @@
 }
 
 <h3>Shipper CRUD</h3>
-<EditForm Model="CurrentShipper" OnValidSubmit="SaveShipper">
+<EditForm Model="CurrentShipper" OnValidSubmit="SaveShipper" FormName="CategoryForm">
     @* Client-Side Validation *@
     <DataAnnotationsValidator />
     <ValidationSummary />
@@ -40,7 +40,10 @@
             @if (ShipperID.HasValue)
             {
                 <button class="btn btn-danger" @onclick="DeleteShipper">Delete</button>
+                <button class="btn btn-info" @onclick="CancelEdit">Cancel Edit</button>
             }
+            <button class="btn btn-secondary" @onclick="ClearForm">Clear form</button>
+
         </div>
     </fieldset>
 
@@ -51,8 +54,21 @@
     [Parameter]
     public int? ShipperID { get; set; }
 
+    [SupplyParameterFromForm]
     private Shipper? CurrentShipper { get; set; }
     private string? feedback;
+
+    private void ClearForm() 
+    {
+        ShipperID = null;
+        CurrentShipper = new();
+    }
+
+    private void CancelEdit() 
+    {
+        ClearForm();
+        CurrentNavigationManger.NavigateTo("/shippers/crud");
+    }
 
     protected override void OnInitialized()
     {
