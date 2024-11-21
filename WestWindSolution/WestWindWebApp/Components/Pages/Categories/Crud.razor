@@ -1,5 +1,93 @@
-﻿<h3>Category Crud</h3>
+﻿@page "/categories/crud"
+@using WestWindSystem.Entities
+@using WestWindSystem.BLL
+
+<PageTitle>Category CRUD</PageTitle>
+
+<h3>Category Maintenance</h3>
+
+@if (feedback != "")
+{
+    <div class="alert alert-info">
+        @feedback
+    </div>
+}
+
+<EditForm EditContext="editContext" OnValidSubmit="Submit" FormName="CategoryCrudForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">
+            Category Name
+            <InputText @bind-Value="Model!.CategoryName" class="form-control" />
+            <ValidationMessage For="() => Model!.CategoryName" />
+        </label>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">
+            Description
+            <InputText @bind-Value="Model!.Description" class="form-control"/>
+            <ValidationMessage For="() => Model!.Description" />
+        </label>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-success">Add</button>
+        <button class="btn-secondary" @onclick="ClearForm">Clear Form</button>
+    </div>
+</EditForm>
 
 @code {
+    [SupplyParameterFromForm]
+    private Category? Model { get; set; }
 
+    private EditContext? editContext;
+
+    private ValidationMessageStore? messageStore;
+
+    private string feedback = "";
+
+    [Inject]
+    private CategoryService? CurrentCategoryServices { get; set; }
+
+    private void HandleValidationRequested(object? sender, 
+        ValidationRequestedEventArgs args)
+    {
+        messageStore?.Clear(); // ?. is the Null Conditional Operator
+
+        if (string.IsNullOrWhiteSpace(Model?.Description)) 
+        {
+            messageStore?.Add(() => Model.Description, "Description value is required.");
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        Model ??= new(); // ?? is Null-Coalescing Operator
+        editContext = new(Model);
+        editContext.OnValidationRequested += HandleValidationRequested;
+        messageStore = new(editContext);
+    }
+
+    private void Submit() 
+    {
+        try
+        {
+            // ! is Null-Forgiving Operator
+            int newId = CurrentCategoryServices!.AddCategory(Model!);
+            feedback = $"Successfully created category with id {newId}";
+        }
+        catch(Exception ex)
+        {
+            // feedback = $"Create category was not successful. {ex.Message}";
+            messageStore?.Add(() => Model, ex.Message);
+        }
+
+    }
+
+    private void ClearForm() 
+    {
+        feedback = "";
+        messageStore?.Clear();
+    }
 }
