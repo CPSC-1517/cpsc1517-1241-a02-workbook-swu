@@ -1,0 +1,81 @@
+﻿@page "/products/query"
+@using WestWindSystem.Entities
+@using WestWindSystem.BLL
+
+<PageTitle>Product Query</PageTitle>
+
+<h3>Product Query</h3>
+<div class="row">
+    <label>
+        Category
+        <InputSelect @bind-Value="selectedCategoryId">
+            @foreach(var currentCategory in categories)
+            {
+                <option value="@currentCategory.CategoryID">@currentCategory.CategoryName</option>
+            }
+        </InputSelect>
+    </label>
+</div>
+<div>
+    <button class="btn btn-info" @onclick="FetchCategoryProducts">Fetch Products</button>
+</div>
+
+@if (categoryProducts.Count > 0)
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>PID</th>
+                <th>Product Name</th>
+                <th>Unit Price</th>
+                <th>Category Name</th>
+                <th>Supplier CompanyName</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var currentProduct in categoryProducts)
+            {
+                <tr>
+                    <td>@currentProduct.ProductID</td>
+                    <td>@currentProduct.ProductName</td>
+                    <td>@currentProduct.UnitPrice</td>
+                    <td>@currentProduct.Category.CategoryName</td>
+                    <td>@currentProduct.Supplier.CompanyName</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Inject]
+    private CategoryService? currentCategoryService { get; set; }
+
+    [Inject]
+    private ProductService? currentProductService { get; set; }
+
+    private int selectedCategoryId = 0;
+    private List<Category> categories = [];
+
+    private List<Product> categoryProducts = [];
+
+    private string feedback = "";
+
+    protected override void OnInitialized()
+    {
+        categories = currentCategoryService!.Category_GetList();
+    }
+
+    private void FetchCategoryProducts() 
+    {
+        try
+        {
+            categoryProducts = currentProductService!.Products_GetByCategory(selectedCategoryId);
+        }
+        catch(Exception ex)
+        {
+            feedback = ex.Message;
+        }
+    }
+
+}

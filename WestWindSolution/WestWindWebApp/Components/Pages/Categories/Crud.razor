@@ -46,6 +46,7 @@
     private ValidationMessageStore? messageStore;
 
     private string feedback = "";
+    private bool isClearing = false;
 
     [Inject]
     private CategoryService? CurrentCategoryServices { get; set; }
@@ -55,9 +56,13 @@
     {
         messageStore?.Clear(); // ?. is the Null Conditional Operator
 
-        if (string.IsNullOrWhiteSpace(Model?.Description)) 
+        if (!isClearing)
         {
-            messageStore?.Add(() => Model.Description, "Description value is required.");
+  
+            if (string.IsNullOrWhiteSpace(Model?.Description))
+            {
+                messageStore?.Add(() => Model.Description, "Description value is required.");
+            }
         }
     }
 
@@ -87,7 +92,9 @@
 
     private void ClearForm() 
     {
+        isClearing = true;
         feedback = "";
-        messageStore?.Clear();
+        Model = new();
+
     }
 }
