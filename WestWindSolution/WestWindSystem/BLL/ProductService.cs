@@ -17,6 +17,43 @@ namespace WestWindSystem.BLL
         {
             _context = registeredContext;
         }
+        #region Database Queries
+        // Return all Product sorted by ProductName then sorted descending by UnitPrice
+        public List<Product> GetAllProducts()
+        {
+            var query = _context.Products
+                .OrderBy(p => p.ProductName)
+                .ThenByDescending(p => p.UnitPrice);
+            return query.ToList();
+        }
+        // Return all Products filtered by Discountinued sorted by ProductName
+        public List<Product> FindProductsByDiscountinued(bool discontinued)
+        {
+            var query = _context.Products
+                .Where(p => p.Discontinued == discontinued)
+                .Include(p => p.Supplier)
+                .OrderBy(p => p.ProductName);
+            return query.ToList();
+        }
+      
+        // Return all Product filtered a partial ProductName 
+        public List<Product> FindProductsByProductName(string partialProductName)
+        {
+            var query = _context.Products
+                            .Where(p => p.ProductName.Contains(partialProductName))
+                            .Include(p => p.Supplier)
+                            .OrderBy(p => p.ProductName);
+            return query.ToList();
+        }
+
+        // Return all Product filtered by CategoryID sorted by ProductName
+        public List<Product> FindProductsByCategoryID(int categoryID)
+        {
+            var query = _context.Products
+                            .Where(p => p.CategoryID == categoryID)
+                            .OrderBy(p => p.ProductName);
+            return query.ToList();
+        }
 
         public List<Product> Products_GetByCategory(int categoryID)
         {
@@ -31,6 +68,7 @@ namespace WestWindSystem.BLL
                 .OrderBy(x => x.ProductName);
             return query.ToList();
         }
+        #endregion Database Queries
 
         #region CRUD methods
         private void ValidateProduct(Product existingProduct)

@@ -5,46 +5,112 @@
 <PageTitle>Product Query</PageTitle>
 
 <h3>Product Query</h3>
-<div class="row">
-    <label>
+
+@if (!string.IsNullOrWhiteSpace(feedback)) 
+{
+    <div class="alert alert-info">
+        @feedback
+    </div>
+}
+
+<div class="row mb-3">
+    <label class="col-sm-2 form-label">
         Category
-        <InputSelect @bind-Value="selectedCategoryId">
-            @foreach(var currentCategory in categories)
+    </label>
+    <div class="col-sm-7">
+        <InputSelect @bind-Value="selectedCategoryId" class="form-control">
+            <option value="0">--- select a category---</option>
+            @foreach (var currentCategory in categories)
             {
                 <option value="@currentCategory.CategoryID">@currentCategory.CategoryName</option>
             }
         </InputSelect>
-    </label>
-</div>
-<div>
-    <button class="btn btn-info" @onclick="FetchCategoryProducts">Fetch Products</button>
+    </div>
+
+    <div class="col-sm-3">
+        <button class="btn btn-info" @onclick="FetchCategoryProducts">Fetch Products</button>
+    </div>   
 </div>
 
-@if (categoryProducts.Count > 0)
+<div class="row mb-3">
+    <label class="col-sm-2 form-label">
+        Product Name
+    </label>
+    <div class="col-sm-7">
+        <InputText @bind-Value="queryProductName" class="form-control"></InputText>
+    </div>
+    <div class="col-sm-3">
+        <button class="btn btn-info" @onclick="FetchProductsByProductName">Fetch Products</button>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <label class="col-sm-2 form-label">
+        Discontinued Products
+    </label>
+    <div class="col-sm-7">
+        <InputRadioGroup @bind-Value="queryDiscontinued">
+            <div class="form-check form-check-inline">
+                <InputRadio Value="true" class="form-check-input"/>
+                <label class="form-check-label">
+                    Yes
+                </label>
+            </div>
+            <div class="form-check form-check-inline">
+                <InputRadio Value="false" class="form-check-input"/>
+                <label class="form-check-label">
+                    No
+                </label>
+            </div>
+        </InputRadioGroup>
+
+    </div>
+    <div class="col-sm-3">
+        <button class="btn btn-info" @onclick="FetchProductsByDiscontinuedOption">Fetch Products</button>
+    </div>
+</div>
+
+<div>
+    <button type="button" >
+        <NavLink href="/products/crud">New Product</NavLink>
+    </button>
+    <button type="button" class="btn btn-secondary" onclick="ClearQueryResults">
+        Clear Query Results.
+    </button>
+</div>
+
+
+@if (queryResultList.Count > 0)
 {
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>PID</th>
-                <th>Product Name</th>
-                <th>Unit Price</th>
-                <th>Category Name</th>
-                <th>Supplier CompanyName</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach(var currentProduct in categoryProducts)
-            {
+    <div style="height:55vh" class="overflow-scroll">
+        <table class="table ">
+            <thead>
                 <tr>
-                    <td>@currentProduct.ProductID</td>
-                    <td>@currentProduct.ProductName</td>
-                    <td>@currentProduct.UnitPrice</td>
-                    <td>@currentProduct.Category.CategoryName</td>
-                    <td>@currentProduct.Supplier.CompanyName</td>
+                    <th>PID</th>
+                    <th>Product Name</th>
+                    <th>Unit Price</th>
+                    <th>Category Name</th>
+                    <th>Supplier CompanyName</th>
+                    <th></th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var currentProduct in queryResultList)
+                {
+                    <tr>
+                        <td>@currentProduct.ProductID</td>
+                        <td>@currentProduct.ProductName</td>
+                        <td>@currentProduct.UnitPrice.ToString("C")</td>
+                        <td>@currentProduct.Category.CategoryName</td>
+                        <td>@currentProduct.Supplier.CompanyName</td>
+                        <td><a href="/products/crud/@currentProduct.ProductID">edit</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+} else {
+    <p>There are no products matching the search criteria.</p>
 }
 
 @code {
@@ -57,7 +123,13 @@
     private int selectedCategoryId = 0;
     private List<Category> categories = [];
 
-    private List<Product> categoryProducts = [];
+    // Define a field to track the product name to search for Products by
+    private string queryProductName = string.Empty;
+    // Define a field to track to search for Discontinued or Non-Discontinued Products
+    private bool queryDiscontinued = false;
+
+    // Define a field to track the query results
+    private List<Product> queryResultList = [];
 
     private string feedback = "";
 
@@ -68,14 +140,70 @@
 
     private void FetchCategoryProducts() 
     {
+        feedback = "";
+        queryResultList = [];
+        if (selectedCategoryId > 0) 
+        {
+            try
+            {
+                queryResultList = currentProductService!.Products_GetByCategory(selectedCategoryId);
+            }
+            catch (Exception ex)
+            {
+                feedback = ex.Message;
+            }
+        } 
+        else 
+        {
+            feedback = "You must select a category to search for.";
+        }
+
+    }
+
+    // Define a method to handle the button click event to search for products by partial product name
+    private void FetchProductsByProductName() 
+    {
+        feedback = "";
+        queryResultList = [];
+        // Verify that queryProductName is not blank
+        if (string.IsNullOrWhiteSpace(queryProductName)) 
+        {
+            feedback = "Product Name search value cannot be blank.";
+        }
+        else 
+        {
+            try
+            {
+                queryResultList = currentProductService!.FindProductsByProductName(queryProductName);
+            }
+            catch (Exception ex)
+            {
+                feedback = ex.Message;
+            }
+        }
+    }
+
+    // Define a method to handle the button click event to search for products by Discontinued option
+    private void FetchProductsByDiscontinuedOption()
+    {
+        feedback = "";
+        queryResultList = [];
         try
         {
-            categoryProducts = currentProductService!.Products_GetByCategory(selectedCategoryId);
+            queryResultList = currentProductService!.FindProductsByDiscountinued(queryDiscontinued);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             feedback = ex.Message;
         }
+
+    }
+
+    // Define a method to ahndle the button click event to clear query search results
+    private void ClearQueryResults() 
+    {
+        feedback = "";
+        queryResultList = [];
     }
 
 }
