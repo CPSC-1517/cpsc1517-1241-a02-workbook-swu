@@ -68,6 +68,12 @@ namespace WestWindSystem.BLL
                 .OrderBy(x => x.ProductName);
             return query.ToList();
         }
+
+        public Product? FindProductById(int productID)
+        {
+            return _context.Products.First(p => p.ProductID == productID);
+        }
+
         #endregion Database Queries
 
         #region CRUD methods
@@ -81,6 +87,7 @@ namespace WestWindSystem.BLL
         public int AddProduct(Product newProduct)
         {
             ValidateProduct(newProduct);
+
             newProduct.Discontinued = false;
             _context.Products.Add(newProduct);
             _context.SaveChanges();
@@ -89,16 +96,26 @@ namespace WestWindSystem.BLL
         public int UpdateProduct(Product existingProduct)
         {
             ValidateProduct(existingProduct);
+
             _context.Products.Update(existingProduct);
             return _context.SaveChanges();
         }
+
         public int DiscontinueProduct(int productID)
         {
             Product? existingProduct = _context.Products.FirstOrDefault(p => p.ProductID == productID);
             if (existingProduct != null)
             {
+                if (existingProduct.Discontinued)
+                {
+                    throw new ArgumentException($"ProductID is already discontinued.");
+                }
                 existingProduct.Discontinued = true;
                 _context.Products.Update(existingProduct);
+            }
+            else
+            {
+                throw new ArgumentException($"ProductID {productID} does not exists in the database.");
             }
             return _context.SaveChanges();
         }

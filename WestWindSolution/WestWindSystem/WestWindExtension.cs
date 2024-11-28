@@ -67,6 +67,12 @@ namespace WestWindSystem
                 var context = serviceProvider.GetRequiredService<WestWindContext>();
                 return new ShipperService(context);
             });
+
+            services.AddTransient<SupplierService>((serviceProvider) =>
+            {
+                var context = serviceProvider.GetRequiredService<WestWindContext>();
+                return new SupplierService(context);
+            });
         }
     }
 }

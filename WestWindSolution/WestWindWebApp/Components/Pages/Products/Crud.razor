@@ -1,8 +1,220 @@
 ﻿@page "/products/crud/{ProductID:int?}"
+@using WestWindSystem.Entities
+@using WestWindSystem.BLL
 
 <h3>Product Crud</h3>
+
+@if(feedback.Length > 0) 
+{
+    <div class="alert alert-info">
+        <p>@feedback</p>
+    </div>
+}
+
+@if(errors.Count > 0)
+{
+    <div class="alert alert-danger">
+        <p>Please fix the following issues:</p>
+        <ul>
+            @foreach(var currentError in errors)
+            {
+                <li>@currentError</li>
+            }
+        </ul>
+    </div>
+}
+
+<EditForm EditContext="editContext" FormName="ProductCrudForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">Product Name:</label>
+        <InputText class="form-control" @bind-Value="Model!.ProductName" />
+        <ValidationMessage For="() => Model!.ProductName" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Supplier:</label>
+        <InputSelect class="form-control" @bind-Value="Model!.SupplierID">
+            <option value="0">---select supplier---</option>
+            @foreach(var currentSupplier in Suppliers)
+            {
+                <option value="@currentSupplier.SupplierID"
+                selected="@(currentSupplier.SupplierID == Model!.SupplierID)"
+                >
+                    @currentSupplier.CompanyName
+                </option>
+            }
+        </InputSelect>
+        <ValidationMessage For="() => Model!.SupplierID" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Category:</label>
+        <InputSelect class="form-control" @bind-Value="Model!.CategoryID">
+            <option value="0">---select category---</option>
+            @foreach (var currentCategory in Categories)
+            {
+                <option value="@currentCategory.CategoryID"
+                selected="@(currentCategory.CategoryID == Model!.CategoryID)">
+                    @currentCategory.CategoryName
+                </option>
+            }
+        </InputSelect>
+        <ValidationMessage For="() => Model!.SupplierID" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Quantity Per Unit:</label>
+        <InputText class="form-control" @bind-Value="Model!.QuantityPerUnit" />
+        <ValidationMessage For="() => Model!.QuantityPerUnit" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Minimum Order Quantity:</label>
+        <InputNumber class="form-control" @bind-Value="Model!.MinimumOrderQuantity" />
+        <ValidationMessage For="() => Model!.MinimumOrderQuantity" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Unit Price:</label>
+        <InputNumber class="form-control" @bind-Value="Model!.UnitPrice" />
+        <ValidationMessage For="() => Model!.UnitPrice" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Units On Order:</label>
+        <InputNumber class="form-control" @bind-Value="Model!.UnitsOnOrder" />
+        <ValidationMessage For="() => Model!.UnitsOnOrder" />
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 text-center">
+
+            @if(ProductID.HasValue)
+            {
+                <button class="btn btn-success" @onclick="UpdateProduct">Update</button>
+
+                <button class="btn btn-danger" @onclick="DeleteProduct">Delete</button>
+
+                <button class="btn btn-light" @onclick="CancelEdit">Cancel</button>
+
+            }
+            else
+            {
+                <button class="btn btn-primary" @onclick="AddProduct">Add</button>
+            }
+            <button class="btn btn-warning" @onclick="ClearForm">Clear Form</button>
+        </div>
+    </div>
+
+</EditForm>
 
 @code {
     [Parameter]
     public int? ProductID { get; set; }
+
+    // The current Product to add, edit/update, or to delete.
+    [SupplyParameterFromForm]
+    private Product? Model { get; set; }
+
+    // For populating the options to select a product category.
+    private List<Category> Categories = [];
+    // For populating the options to select a product supplier
+    private List<Supplier> Suppliers = [];
+
+    private EditContext? editContext;
+
+    private ValidationMessageStore? messageStore;
+
+    private string feedback = "";
+    private List<string> errors = [];
+    private bool isClearing = false;
+
+    #region BLL/NavigationManager/IJSRuntime dependencies
+    [Inject]
+    private NavigationManager? CurrentNavigationManager { get; set; }
+
+    [Inject]
+    private IJSRuntime? CurrentJSRuntime { get; set; }
+
+    [Inject]
+    private ProductService? CurrentProductServices { get; set; }
+
+    [Inject]
+    private CategoryService?  CurrentCategoryServices { get; set; }
+
+    [Inject]
+    private SupplierService? CurrentSupplierServices { get; set; }
+    #endregion
+
+    protected override void OnInitialized()
+    {
+        try 
+        {
+            Suppliers = CurrentSupplierServices!.GetAll();
+            Categories = CurrentCategoryServices!.Category_GetList();
+        }
+        catch(Exception ex) 
+        {
+            errors.Add(ex.Message);
+        }
+        if (ProductID.HasValue)
+        {
+            try 
+            {
+                Model = CurrentProductServices!.FindProductById(ProductID.Value);
+            }
+            catch(Exception ex)
+            {
+                Model = new();
+                errors.Add(ex.Message);
+            }
+        }
+        else
+        {
+            Model = new();
+        }
+        
+        editContext = new(Model!);
+        editContext.OnValidationRequested += HandleValidationRequested;
+        messageStore = new(editContext);
+
+    }
+
+    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
+    {
+        // Clear previous errors
+        feedback = "";
+        errors.Clear();
+        messageStore?.Clear();
+    }
+
+    private void AddProduct() 
+    {
+        feedback = "AddProduct requested";
+    }
+
+    private void UpdateProduct()
+    {
+        feedback = "UpdateProduct requested";
+    }
+
+    private void DeleteProduct()
+    {
+        feedback = "DeleteProduct requested";
+    }
+
+    private void CancelEdit() 
+    {
+        feedback = "CancelEdit requested";
+    }
+
+    private void ClearForm()
+    {
+        feedback = "ClearForm requested";
+        // isClearing = true;
+        // feedback = "";
+        // errors.Clear();
+        // Model = new();
+    }
 }
