@@ -2,7 +2,12 @@
 @using WestWindSystem.Entities
 @using WestWindSystem.BLL
 
-<h3>Product Crud</h3>
+<PageTitle>Product Maintenance</PageTitle>
+
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/@@picocss/pico@@2/css/pico.min.css">
+
+<h3>Product Maintenance</h3>
 
 @if(feedback.Length > 0) 
 {
@@ -24,34 +29,39 @@
     </div>
 }
 
-<EditForm EditContext="editContext" FormName="ProductCrudForm">
+<EditForm EditContext="editContext" OnValidSubmit="SaveProduct" FormName="ProductCrudForm">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div class="mb-3">
-        <label class="form-label">Product Name:</label>
-        <InputText class="form-control" @bind-Value="Model!.ProductName" />
+    <label>
+        ProductID (Read Only)
+        <InputNumber @bind-Value="Model!.ProductID" disabled />
+    </label>
+    <label >
+        Product Name
+        <InputText @bind-Value="Model!.ProductName" />
         <ValidationMessage For="() => Model!.ProductName" />
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Supplier:</label>
-        <InputSelect class="form-control" @bind-Value="Model!.SupplierID">
-            <option value="0">---select supplier---</option>
-            @foreach(var currentSupplier in Suppliers)
+    </label>
+
+    <label >
+        Supplier
+        <InputSelect @bind-Value="Model!.SupplierID">
+            <option value="0">Select a supplier...</option>
+            @foreach (var currentSupplier in Suppliers)
             {
                 <option value="@currentSupplier.SupplierID"
-                selected="@(currentSupplier.SupplierID == Model!.SupplierID)"
-                >
+                selected="@(currentSupplier.SupplierID == Model!.SupplierID)">
                     @currentSupplier.CompanyName
                 </option>
             }
         </InputSelect>
         <ValidationMessage For="() => Model!.SupplierID" />
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Category:</label>
-        <InputSelect class="form-control" @bind-Value="Model!.CategoryID">
-            <option value="0">---select category---</option>
+    </label>
+
+    <label>
+        Category
+        <InputSelect @bind-Value="Model!.CategoryID">
+            <option value="0">Select a category...</option>
             @foreach (var currentCategory in Categories)
             {
                 <option value="@currentCategory.CategoryID"
@@ -61,51 +71,60 @@
             }
         </InputSelect>
         <ValidationMessage For="() => Model!.SupplierID" />
-    </div>
+    </label>
 
-    <div class="mb-3">
-        <label class="form-label">Quantity Per Unit:</label>
-        <InputText class="form-control" @bind-Value="Model!.QuantityPerUnit" />
+    <label>
+        Quantity Per Unit
+        <InputText @bind-Value="Model!.QuantityPerUnit" />
         <ValidationMessage For="() => Model!.QuantityPerUnit" />
-    </div>
+    </label>
 
-    <div class="mb-3">
-        <label class="form-label">Minimum Order Quantity:</label>
-        <InputNumber class="form-control" @bind-Value="Model!.MinimumOrderQuantity" />
+    <label>
+        Minimum Order Quantity
+        <InputNumber @bind-Value="Model!.MinimumOrderQuantity" />
         <ValidationMessage For="() => Model!.MinimumOrderQuantity" />
-    </div>
+    </label>
 
-    <div class="mb-3">
-        <label class="form-label">Unit Price:</label>
-        <InputNumber class="form-control" @bind-Value="Model!.UnitPrice" />
+    <label >
+        Unit Price
+        <InputNumber  @bind-Value="Model!.UnitPrice" />
         <ValidationMessage For="() => Model!.UnitPrice" />
-    </div>
+    </label>
 
-    <div class="mb-3">
-        <label class="form-label">Units On Order:</label>
-        <InputNumber class="form-control" @bind-Value="Model!.UnitsOnOrder" />
+    <label>
+        Units On Order
+        <InputNumber @bind-Value="Model!.UnitsOnOrder" />
         <ValidationMessage For="() => Model!.UnitsOnOrder" />
+    </label>
+
+    <fieldset>
+        <legend>Discontinued:</legend>
+        <label>
+            <InputCheckbox @bind-Value="Model!.Discontinued" disabled />
+            Is Discontinued
+        </label>
+    </fieldset>
+
+
+    <div class="grid">
+        @if(Model.ProductID > 0)
+        {
+            <button type="submit">Update</button>
+
+            <button type="button" @onclick="DeleteProduct">
+                @(Model.Discontinued ? "Reactivate Product" : "Discontinue Product")
+            </button>
+
+            <button type="button" @onclick="CancelEdit">Cancel</button>
+
+        }
+        else
+        {
+            <button type="submit">Add</button>
+            <button type="button" @onclick="ClearForm">Clear Form</button>
+        }
     </div>
 
-    <div class="row">
-        <div class="col-md-12 text-center">
-
-            @if(ProductID.HasValue)
-            {
-                <button class="btn btn-success" @onclick="UpdateProduct">Update</button>
-
-                <button class="btn btn-danger" @onclick="DeleteProduct">Delete</button>
-
-                <button class="btn btn-light" @onclick="CancelEdit">Cancel</button>
-
-            }
-            else
-            {
-                <button class="btn btn-primary" @onclick="AddProduct">Add</button>
-            }
-            <button class="btn btn-warning" @onclick="ClearForm">Clear Form</button>
-        </div>
-    </div>
 
 </EditForm>
 
@@ -174,7 +193,7 @@
         {
             Model = new();
         }
-        
+
         editContext = new(Model!);
         editContext.OnValidationRequested += HandleValidationRequested;
         messageStore = new(editContext);
@@ -189,32 +208,135 @@
         messageStore?.Clear();
     }
 
-    private void AddProduct() 
+    private void SaveProduct() 
     {
-        feedback = "AddProduct requested";
+        // feedback = "AddProduct requested";
+        // Clear all messages
+        feedback = "";
+        errors.Clear();
+        messageStore?.Clear();
+
+        try
+        {
+            // Verify that there are not validation errors
+            if (editContext!.Validate()) 
+            {
+                // Verify a valid category is selected
+                if (Model!.CategoryID == 0)
+                {
+                    messageStore?.Add(() => Model.CategoryID, "You must select a category");
+                }
+                // Verify a valid supplier is selected
+                if (Model!.SupplierID == 0)
+                {
+                    messageStore?.Add(() => Model.SupplierID, "You must select a supplier");
+                }
+                // Verify that there are no validation messages
+                if (editContext.GetValidationMessages().Any()) 
+                {
+                    // Notify editContext that validation state has changed
+                    editContext.NotifyValidationStateChanged();
+                }
+                else
+                {
+                    // Check if add or update is requested
+                    if (Model!.ProductID == 0) 
+                    {
+                        // Add Product to the database
+                        int newProductId = CurrentProductServices!.AddProduct(Model);
+                        feedback = $"Successfully added new product with id {newProductId}";
+                    }
+                    else
+                    {
+                        // Update Product in the database
+                        CurrentProductServices!.UpdateProduct(Model);
+                        feedback = $"Successfully updated product";
+                    }
+
+                }
+            }
+
+        }
+        catch(ArgumentNullException ex) 
+        {
+            errors.Add($"Missing Data: {GetInnerException(ex).Message}");
+        }
+        catch (ArgumentException ex)
+        {
+            errors.Add($"Data Issue: {GetInnerException(ex).Message}");
+        }
+        catch (Exception ex)
+        {
+            errors.Add($"System Error: {GetInnerException(ex).Message}");
+        }
     }
 
-    private void UpdateProduct()
+    // private void UpdateProduct()
+    // {
+    //     feedback = "UpdateProduct requested";
+    // }
+
+    private async Task DeleteProduct()
     {
-        feedback = "UpdateProduct requested";
+        //feedback = "DeleteProduct requested";
+        if (Model!.Discontinued) 
+        {
+            if (await CurrentJSRuntime!.InvokeAsync<bool>("confirm", "Are you sure you want to activate this product?"))
+            {
+                try
+                {
+                    Model!.Discontinued = false;
+                    CurrentProductServices!.UpdateProduct(Model);
+                    await CurrentJSRuntime!.InvokeVoidAsync("alert", "Product has been activated");
+                }
+                catch (Exception ex)
+                {
+                    errors.Add(GetInnerException(ex).Message);
+                }
+            }
+        }
+        else
+        {
+            if (await CurrentJSRuntime!.InvokeAsync<bool>("confirm", "Are you sure you want to delete this product?"))
+            {
+                try
+                {
+                    CurrentProductServices!.DiscontinueProduct(Model!.ProductID);
+                    await CurrentJSRuntime!.InvokeVoidAsync("alert", "Product has been discontinued");
+                }
+                catch (Exception ex)
+                {
+                    errors.Add(GetInnerException(ex).Message);
+                }
+            }
+        }
+
     }
 
-    private void DeleteProduct()
+    private async Task CancelEdit() 
     {
-        feedback = "DeleteProduct requested";
-    }
-
-    private void CancelEdit() 
-    {
-        feedback = "CancelEdit requested";
+        // feedback = "CancelEdit requested";
+        if (await CurrentJSRuntime!.InvokeAsync<bool>("confirm","Are you sure you want to cancel edit?"))
+        {
+            //ClearForm();
+            CurrentNavigationManager!.NavigateTo("/products/crud");
+        }
     }
 
     private void ClearForm()
     {
         feedback = "ClearForm requested";
         // isClearing = true;
-        // feedback = "";
-        // errors.Clear();
-        // Model = new();
+        feedback = "";
+        errors.Clear();
+        Model = new();
     }
+
+    private Exception GetInnerException(Exception ex)
+    {
+        while (ex.InnerException != null)
+            ex = ex.InnerException;
+        return ex;
+    }
+
 }
