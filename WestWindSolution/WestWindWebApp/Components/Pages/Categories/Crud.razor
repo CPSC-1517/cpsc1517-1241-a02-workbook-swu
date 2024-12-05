@@ -1,4 +1,4 @@
-﻿@page "/categories/crud"
+﻿@page "/categories/crud/{CategoryID:int?}"
 @using WestWindSystem.Entities
 @using WestWindSystem.BLL
 
@@ -6,10 +6,23 @@
 
 <h3>Category Maintenance</h3>
 
-@if (feedback != "")
+@if (feedback.Length > 0)
 {
     <div class="alert alert-info">
-        @feedback
+        <p>@feedback</p>
+    </div>
+}
+
+@if (errors.Count > 0)
+{
+    <div class="alert alert-danger">
+        <p>Please fix the following issues:</p>
+        <ul>
+            @foreach (var currentError in errors)
+            {
+                <li>@currentError</li>
+            }
+        </ul>
     </div>
 }
 
@@ -32,12 +45,17 @@
         </label>
     </div>
     <div class="col-auto">
-        <button type="submit" class="btn btn-success">Add</button>
+        <button type="submit" class="btn btn-success">
+            @(Model.CategoryID == 0 ? "Add" : "Update")
+        </button>
         <button class="btn-secondary" @onclick="ClearForm">Clear Form</button>
     </div>
 </EditForm>
 
 @code {
+    [Parameter]
+    public int? CategoryID { get; set; }
+
     [SupplyParameterFromForm]
     private Category? Model { get; set; }
 
@@ -46,48 +64,109 @@
     private ValidationMessageStore? messageStore;
 
     private string feedback = "";
+    private List<string> errors = [];
     private bool isClearing = false;
 
     [Inject]
     private CategoryService? CurrentCategoryServices { get; set; }
 
-    private void HandleValidationRequested(object? sender, 
-        ValidationRequestedEventArgs args)
-    {
-        messageStore?.Clear(); // ?. is the Null Conditional Operator
+    // private void HandleValidationRequested(object? sender, 
+    //     ValidationRequestedEventArgs args)
+    // {
+    //     messageStore?.Clear(); ?. is the Null Conditional Operator
 
-        if (!isClearing)
-        {
-  
-            if (string.IsNullOrWhiteSpace(Model?.Description))
-            {
-                messageStore?.Add(() => Model.Description, "Description value is required.");
-            }
-        }
-    }
+    //     if (!isClearing)
+    //     {
+
+    //         if (string.IsNullOrWhiteSpace(Model?.Description))
+    //         {
+    //             messageStore?.Add(() => Model!.Description, "Description value is required.");
+    //         }
+    //     }
+    // }
 
     protected override void OnInitialized()
     {
-        Model ??= new(); // ?? is Null-Coalescing Operator
-        editContext = new(Model);
-        editContext.OnValidationRequested += HandleValidationRequested;
+        if (CategoryID.HasValue) 
+        {
+            try
+            {
+                Model = CurrentCategoryServices!.GetById(CategoryID.Value);
+            }
+            catch(Exception ex)
+            {
+                Model = new();
+                errors.Add(ex.Message);
+            }
+        }
+        else 
+        {
+            Model = new(); 
+        }
+        editContext = new(Model!);
+        // editContext.OnValidationRequested += HandleValidationRequested;
         messageStore = new(editContext);
     }
 
     private void Submit() 
     {
+        feedback = "";
+        errors.Clear();
+        messageStore?.Clear();
+
         try
         {
-            // ! is Null-Forgiving Operator
-            int newId = CurrentCategoryServices!.AddCategory(Model!);
-            feedback = $"Successfully created category with id {newId}";
+            // Verify that there are not validation errors
+            if (editContext!.Validate()) 
+            {
+                // Validate description is not blank
+                if (string.IsNullOrWhiteSpace(Model!.Description))
+                {
+                    messageStore?.Add(() => Model!.Description, "Description cannot be blank.");
+                }
+                // Verify that there are no validation messages
+                if (editContext.GetValidationMessages().Any()) 
+                {
+                    // Notify editContext that validation state has changed
+                    editContext.NotifyValidationStateChanged();
+                }
+                else
+                {
+                    // Check if add or update is requsted
+                    if (Model!.CategoryID == 0) 
+                    {
+                        int newCategoryId = CurrentCategoryServices!.AddCategory(Model);
+                        feedback = $"Successfully added new category with id of {newCategoryId}";
+                    }
+                    else
+                    {
+                        int rowsAffected = CurrentCategoryServices!.UpdateCategory(Model);
+                        feedback = "Successfully updated category.";
+                    }
+                }
+            }
+       
         }
-        catch(Exception ex)
+        catch (ArgumentNullException ex)
         {
-            // feedback = $"Create category was not successful. {ex.Message}";
-            messageStore?.Add(() => Model, ex.Message);
+            errors.Add($"Missing Data: {GetInnerException(ex).Message}");
+        }
+        catch (ArgumentException ex)
+        {
+            errors.Add($"Data Issue: {GetInnerException(ex).Message}");
+        }
+        catch (Exception ex)
+        {
+            errors.Add($"System Error: {GetInnerException(ex).Message}");
         }
 
+    }
+
+    private Exception GetInnerException(Exception ex)
+    {
+        while (ex.InnerException != null)
+            ex = ex.InnerException;
+        return ex;
     }
 
     private void ClearForm() 

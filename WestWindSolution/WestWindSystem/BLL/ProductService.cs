@@ -83,6 +83,22 @@ namespace WestWindSystem.BLL
             {
                 throw new ArgumentNullException(nameof(existingProduct),"A product is required");
             }
+            // Validate for new Product that ProductName must unique in a category
+            if (existingProduct.ProductID == 0)
+            {
+                bool uniqueProductName = _context.Products.Any(p => p.CategoryID == existingProduct.CategoryID
+                                                    && p.ProductName == existingProduct.ProductName);
+                if (!uniqueProductName)
+                {
+                    throw new ArgumentException($"Product Name within a category must be unique. There is another product named {existingProduct.ProductName}.");
+                }
+            }
+            // Validate UnitPrice is a positive or zero number
+            if (existingProduct.UnitPrice < 0)
+            {
+                throw new ArgumentException($"Unit Price must be zero or positive.");
+            }
+
         }
         public int AddProduct(Product newProduct)
         {

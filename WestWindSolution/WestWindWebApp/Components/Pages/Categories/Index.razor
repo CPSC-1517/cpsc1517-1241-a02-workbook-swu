@@ -11,6 +11,7 @@
     <table class="table table-striped">
         <thead>
             <tr>
+                <th></th>
                 <th>ID</th>
                 <th>Name</th>
                 <th>Description</th>
@@ -20,6 +21,7 @@
             @foreach (var currentCategory in _categoryList)
             {
                 <tr>
+                    <td><a href="/categories/crud/@currentCategory.CategoryID">edit</a></td>
                     <td>@currentCategory.CategoryID</td>
                     <td>@currentCategory.CategoryName</td>
                     <td>@currentCategory.Description</td>
