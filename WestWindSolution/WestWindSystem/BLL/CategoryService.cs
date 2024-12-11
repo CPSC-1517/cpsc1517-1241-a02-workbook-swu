@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -38,13 +39,11 @@ namespace WestWindSystem.BLL
         }
         public int UpdateCategory(Category updatedCategory)
         {
-            // Update all properties of the entity
-            _context.Categories.Update(updatedCategory);
-
-            // Update specific properties of an entity
-            //Category existingCategory = GetById(updatedCategory.CategoryID);
-            //_context.Entry(existingCategory).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-            //existingCategory.CategoryName = updatedCategory.CategoryName;
+            // https://learn.microsoft.com/en-us/ef/core/change-tracking/identity-resolution
+            // Query then apply changes
+            Category trackedCategory = GetById(updatedCategory.CategoryID);
+            // Copy all the values from existingProduct to set them on the trackedProduct 
+            _context.Entry(trackedCategory).CurrentValues.SetValues(updatedCategory);  
 
             int rowsUpdated = _context.SaveChanges();
             return rowsUpdated;
@@ -79,7 +78,8 @@ namespace WestWindSystem.BLL
         {
             var query = _context
                         .Categories
-                        .OrderBy(x => x.CategoryName);
+                        .OrderBy(x => x.CategoryName)
+                        .AsNoTracking();
             return query.ToList();
         }
 
